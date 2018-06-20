@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Movie App</string>
+    <string name="content_description">Movie image</string>
+    <string name="menu_popular">By Popular</string>
+    <string name="menu_top_rated">By Top Rated</string>
+    <string name="release_date">Release date:</string>
+    <string name="tx_rating">Rating</string>
+</resources>
