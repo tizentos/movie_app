@@ -1,14 +1,21 @@
 package ltd.boku.movieapp;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -28,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
     private static String MOVIE_EXTRA = "movie";
     public static final String MOVIELIST_INSTANCE = "MOVIE";
     public static final String TITLE = "TITLE";
+    public static String PATH="popular";   //to save temp path
 
     //define working parameters
     public static String title = null;
@@ -36,8 +44,6 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
     private  Movie movie = new ltd.boku.movieapp.Movie();
     static MovieRecyclerViewAdapter movieRecyclerViewAdapter;
 
-
-
     private RecyclerView recyclerView;
 
     @Override
@@ -45,9 +51,12 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        URL url = AppUtility.composeURL(BASEURL, "popular");
+        URL url = AppUtility.composeURL(BASEURL, PATH);
         title="Popular movies";
-        loadMovie(url);
+
+        if (checkConnection()){
+            loadMovie(url);
+        }
 
         recyclerView = findViewById(R.id.rv_movies);
 
@@ -71,6 +80,32 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
             title=savedInstanceState.getString(TITLE);
         }
         setTitle(title);
+    }
+    public boolean checkConnection(){
+        ConnectivityManager connectivityManager=(ConnectivityManager)this.getBaseContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo[] info=connectivityManager.getAllNetworkInfo();
+
+        for (int i = 0; i<info.length; i++){
+            if (info[i].getState() == NetworkInfo.State.CONNECTED){
+                return true;
+            }
+        }
+        Snackbar.make(findViewById(R.id.main_screen),"Internet not connected",Snackbar.LENGTH_INDEFINITE)
+                .setAction("RECONNECT", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        reconnect();
+                    }
+                }).show();
+        return false;
+    }
+    void reconnect(){
+       boolean connected=checkConnection();
+       if (connected){
+           URL url = AppUtility.composeURL(BASEURL, PATH);
+           loadMovie(url);
+           return;
+       }
     }
 
     @Override
@@ -139,16 +174,22 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
 
         switch (id) {
             case R.id.menu_popular:
-                composedURL = AppUtility.composeURL(BASEURL, "popular");
+                PATH="popular";
+                composedURL = AppUtility.composeURL(BASEURL, PATH);
                 title="Popular Movies";
                 this.setTitle(title);
-                loadMovie(composedURL);
+                if (checkConnection()) {
+                    loadMovie(composedURL);
+                }
                 return true;
             case R.id.menu_top_rated:
-                composedURL = AppUtility.composeURL(BASEURL, "top_rated");
+                PATH="top_rated";
+                composedURL = AppUtility.composeURL(BASEURL, PATH);
                 title="Top-Rated Movies";
                 this.setTitle(title);
-                loadMovie(composedURL);
+                if (checkConnection()) {
+                    loadMovie(composedURL);
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);

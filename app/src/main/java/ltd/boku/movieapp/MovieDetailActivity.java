@@ -57,6 +57,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         userRating.setRating(movie.getUser_rating()/2);
 
         setTitle("Movie Detail");
-
     }
+
 }
