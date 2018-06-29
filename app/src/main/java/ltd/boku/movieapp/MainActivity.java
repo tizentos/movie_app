@@ -11,25 +11,26 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+
+import com.facebook.stetho.Stetho;
 
 import java.io.IOException;
 
 import java.net.URL;
 
 
-
+import ltd.boku.movieapp.adapters.MovieRecyclerViewAdapter;
+import ltd.boku.movieapp.database.Movie;
 import ltd.boku.movieapp.utilities.AppUtility;
 
-public class MainActivity extends AppCompatActivity implements  ltd.boku.movieapp.MovieRecyclerViewAdapter.OnMovieRecyclerViewClickListener {
+import static ltd.boku.movieapp.utilities.AppUtility.BASEURL;
+
+public class MainActivity extends AppCompatActivity implements  MovieRecyclerViewAdapter.OnMovieRecyclerViewClickListener {
 
     //app's environment variable
-    public static final String APIKEY = "APIKEY";  //TODO put your API key here
-    public static final String BASEURL = "https://api.themoviedb.org/3/movie";
 
     //savedInstanceState elements and intent extras
     private static String MOVIE_EXTRA = "movie";
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
     public static String title = null;
     public String movieJSON = null;
     public static Movie[] movieList;
-    private  Movie movie = new ltd.boku.movieapp.Movie();
+    private  Movie movie = new Movie();
     static MovieRecyclerViewAdapter movieRecyclerViewAdapter;
 
     private RecyclerView recyclerView;
@@ -50,6 +51,10 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        Stetho.initialize(Stetho.newInitializerBuilder(this)
+                .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(this)).build());
 
         URL url = AppUtility.composeURL(BASEURL, PATH);
         title="Popular movies";
@@ -71,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements  ltd.boku.movieap
         recyclerView.setHasFixedSize(true);
 
 
-        movieRecyclerViewAdapter = new ltd.boku.movieapp.MovieRecyclerViewAdapter(this);
+        movieRecyclerViewAdapter = new MovieRecyclerViewAdapter(this);
         recyclerView.setAdapter(movieRecyclerViewAdapter);
 
         if (savedInstanceState != null) {

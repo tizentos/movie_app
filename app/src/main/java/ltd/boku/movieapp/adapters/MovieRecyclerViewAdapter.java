@@ -1,4 +1,4 @@
-package ltd.boku.movieapp;
+package ltd.boku.movieapp.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,17 +10,20 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import ltd.boku.movieapp.R;
+import ltd.boku.movieapp.database.Movie;
+
 
 
 public class MovieRecyclerViewAdapter extends  RecyclerView.Adapter<MovieRecyclerViewAdapter.MovieViewHolder>{
 
-    interface  OnMovieRecyclerViewClickListener{
+    public  interface  OnMovieRecyclerViewClickListener{
         void onMovieRecyclerViewClickListener(int itemId);
     }
 
     //define dataset and context for the adapter
     static OnMovieRecyclerViewClickListener context;
-    ltd.boku.movieapp.Movie[] movieList;
+    Movie[] movieList;
 
     public MovieRecyclerViewAdapter(OnMovieRecyclerViewClickListener context) {
         this.context = context;
@@ -55,7 +58,7 @@ public class MovieRecyclerViewAdapter extends  RecyclerView.Adapter<MovieRecycle
     @Override
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
 
-        ltd.boku.movieapp.Movie movie=movieList[position];
+        Movie movie=movieList[position];
 
         Picasso.with((Context)context)
                 .load(movie.getImage_thumbnail_url())
