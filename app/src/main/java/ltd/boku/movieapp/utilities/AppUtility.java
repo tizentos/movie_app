@@ -21,7 +21,7 @@ import ltd.boku.movieapp.database.Review;
 
 
 public class AppUtility {
-    public static final String APIKEY = "9ed859bdd4440d4271aef4ede997b7c4";
+    public static final String APIKEY = "API";
     public static final String BASEURL = "https://api.themoviedb.org/3/movie";
 
     //buid a URL with a specific path
@@ -168,5 +168,5 @@ public class AppUtility {
         }
         return key;
     }
-
+//xxxx9ed859bdd4440d4271aef4ede997b7c4xxxx//
 }
