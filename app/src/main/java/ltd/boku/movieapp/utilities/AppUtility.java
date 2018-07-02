@@ -1,6 +1,7 @@
 package ltd.boku.movieapp.utilities;
 
 import android.net.Uri;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,10 +19,13 @@ import java.util.List;
 import ltd.boku.movieapp.database.Movie;
 import ltd.boku.movieapp.adapters.MovieRecyclerViewAdapter;
 import ltd.boku.movieapp.database.Review;
+import ltd.boku.movieapp.database.Trailer;
+import ltd.boku.movieapp.viewmodels.MainViewModel;
 
 
 public class AppUtility {
-    public static final String APIKEY = "API";
+    public static final String GOOGLEAPI="AIzaSyC_chnH8o_OIcuN3f_QGwRnjEhzCUcuc4s";
+    public static final String APIKEY = "API";  //TODO Add Movies API Key here
     public static final String BASEURL = "https://api.themoviedb.org/3/movie";
 
     //buid a URL with a specific path
@@ -81,7 +85,7 @@ public class AppUtility {
     }
 
     //parse received JSON data
-    public static void movieJSONParser(String rawJSON, Movie[] movieList, MovieRecyclerViewAdapter movieRecyclerViewAdapter) {
+    public static void movieJSONParser(String rawJSON, List<Movie> movieList, MovieRecyclerViewAdapter movieRecyclerViewAdapter) {
         long movieId=0;
         String original_title = null;
         String image_thumbnail_url = null;
@@ -93,7 +97,7 @@ public class AppUtility {
             JSONObject jsonObject = new JSONObject(rawJSON);
             JSONArray jsonArray = jsonObject.getJSONArray("results");
 
-            movieList = new Movie[jsonArray.length()];
+            movieList = new ArrayList<>(jsonArray.length());
 
 //            String jsonArr=jsonArray.toString(1);
 //            Log.d("JSON Converter", "movieJSONParser: " + jsonArr);
@@ -106,7 +110,7 @@ public class AppUtility {
                 user_rating = Float.parseFloat(jsonItem.getString("vote_average"));
                 release_date = jsonItem.getString("release_date");
                 movie = new Movie(movieId,original_title, image_thumbnail_url, overview, user_rating, release_date);
-                movieList[i] = movie;
+                movieList.add(movie);
             }
             movieRecyclerViewAdapter.setMovieList(movieList);
         } catch (JSONException e) {
@@ -152,21 +156,24 @@ public class AppUtility {
         return reviews;
     }
 
-    public static List<String> getTrailer(String rawJSON){
-        List<String> key=new ArrayList<>();
+    public static List<Trailer> getTrailer(String rawJSON){
+        List<Trailer> trailers=new ArrayList<>();
         try{
             JSONObject jsonObject=new JSONObject(rawJSON);
             JSONArray jsonArray=jsonObject.getJSONArray("results");
             if (jsonArray.length() > 0) {
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonItem=jsonArray.getJSONObject(i);
-                    key.add(jsonItem.getString("key"));
+                    String key=jsonItem.getString("key");
+                    String title=jsonItem.getString("name");
+                    Trailer trailer=new Trailer(key,title);
+                    trailers.add(trailer);
                 }
             }
         }catch (JSONException e){
             e.printStackTrace();
         }
-        return key;
+        return trailers;
     }
 //xxxx9ed859bdd4440d4271aef4ede997b7c4xxxx//
 }

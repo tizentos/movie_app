@@ -7,4 +7,11 @@
     <string name="tx_rating">Rating</string>
     <string name="reviewTab">Reviews</string>
     <string name="trailerTab">Trailers</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="mark_favorite">Mark as favorite</string>
+    <string name="menu_show_favorite">Show Favorite</string>
+    <string name="no_review">No review for this movie</string>
+    <string name="menu_share_text">Share with friends</string>
+    <string name="share_message">Hey Friend! Check this movie out; %1$s</string>
+    <string name="share_title">Inform your friends about the movie</string>
 </resources>

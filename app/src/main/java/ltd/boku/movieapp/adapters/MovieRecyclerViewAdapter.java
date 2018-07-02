@@ -10,6 +10,8 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 import ltd.boku.movieapp.R;
 import ltd.boku.movieapp.database.Movie;
 
@@ -23,21 +25,21 @@ public class MovieRecyclerViewAdapter extends  RecyclerView.Adapter<MovieRecycle
 
     //define dataset and context for the adapter
     static OnMovieRecyclerViewClickListener context;
-    Movie[] movieList;
+    List<Movie> movieList;
 
     public MovieRecyclerViewAdapter(OnMovieRecyclerViewClickListener context) {
         this.context = context;
     }
 
     //set new movie list
-    public void setMovieList(Movie[] movieList) {
+    public void setMovieList(List<Movie> movieList) {
         this.movieList = movieList;
         notifyDataSetChanged();
     }
 
     //get a movie from the movie list
     public Movie getMovie(int position){
-        return movieList[position];
+        return movieList.get(position);
     }
 
     @NonNull
@@ -58,10 +60,10 @@ public class MovieRecyclerViewAdapter extends  RecyclerView.Adapter<MovieRecycle
     @Override
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
 
-        Movie movie=movieList[position];
+        Movie movie=movieList.get(position);
 
         Picasso.with((Context)context)
-                .load(movie.getImage_thumbnail_url())
+                .load(Movie.baseImageUrl+movie.getImage_thumbnail_url())
                 .placeholder(R.drawable.placeholder)
                 .into(holder.movieImage);
     }
@@ -69,7 +71,7 @@ public class MovieRecyclerViewAdapter extends  RecyclerView.Adapter<MovieRecycle
     @Override
     public int getItemCount() {
         if (movieList != null){
-            return movieList.length;
+            return movieList.size();
         }
         return 0;
     }
@@ -80,12 +82,9 @@ public class MovieRecyclerViewAdapter extends  RecyclerView.Adapter<MovieRecycle
             super(itemView);
             movieImage=itemView.findViewById(R.id.img_movie);
             //send click signal to context
-            movieImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int index=getAdapterPosition();
-                    context.onMovieRecyclerViewClickListener(index);
-                }
+            movieImage.setOnClickListener(v -> {
+                int index=getAdapterPosition();
+                context.onMovieRecyclerViewClickListener(index);
             });
         }
     }

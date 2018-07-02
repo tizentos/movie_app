@@ -33,14 +33,14 @@ public class FavoriteMovieRepository {
      * insert operation for movie table
      * @param movie
      */
-    public void insertFavoriteMovie(Movie movie){
+    public boolean insertFavoriteMovie(Movie movie){
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
                 movieDao.insert(movie);
-
             }
         });
+        return  true;
     }
 
     public void updateFavoriteMovie(Movie movie){
@@ -51,24 +51,27 @@ public class FavoriteMovieRepository {
             }
         });
     }
-    public void deleteFavoriteMovie(Movie movie){
+    public boolean deleteFavoriteMovie(Movie movie){
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
                 movieDao.delete(movie);
             }
         });
+        return true;
     }
 
-    LiveData<List<Movie>> getFavoriteMovieList(){
+    public LiveData<List<Movie>> getFavoriteMovieList(){
        return movieDao.findAllMovies();
     }
 
-    LiveData<Movie> getFavoriteMovie(long id){
+
+    //Reserved methods
+    public LiveData<Movie> getFavoriteMovie(long id){
         return movieDao.findMovieById(id);
     }
 
-    LiveData<List<Review>> getFavoriteMovieReviews(long favoriteMovieId){
+    public LiveData<List<Review>> getFavoriteMovieReviews(long favoriteMovieId){
         return reviewDao.findReviewForMovie(favoriteMovieId);
     }
 

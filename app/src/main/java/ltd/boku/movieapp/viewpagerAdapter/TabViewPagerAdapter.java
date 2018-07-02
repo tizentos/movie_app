@@ -10,7 +10,6 @@ import ltd.boku.movieapp.fragments.ReviewFragment;
 import ltd.boku.movieapp.fragments.TrailerFragment;
 
 public class TabViewPagerAdapter extends FragmentPagerAdapter {
-    private static final String TAG = "TabViewPagerAdapter";
 
     public TabViewPagerAdapter(FragmentManager fm) {
         super(fm);
@@ -19,7 +18,6 @@ public class TabViewPagerAdapter extends FragmentPagerAdapter {
     @Nullable
     @Override
     public CharSequence getPageTitle(int position) {
-        Log.d(TAG, "getPageTitle: entering: "+ position);
         switch(position){
             case 0:
                 return "Reviews";
@@ -32,18 +30,14 @@ public class TabViewPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        Log.d(TAG, "getItem: entering : " + position);
         switch(position){
             case 0:
-                Log.d(TAG, "getItem: in review");
                 ReviewFragment reviewFragment=new ReviewFragment();
                 return  reviewFragment;
             case 1:
-                Log.d(TAG, "getItem: in trailer");
                 TrailerFragment trailerFragment=new TrailerFragment();
                 return trailerFragment;
         }
-        Log.d(TAG, "getItem: null");
         return null;
     }
 

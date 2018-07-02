@@ -8,4 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="TextStyle">
+        <item name="android:textColor">#FAFAFA</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
 </resources>
