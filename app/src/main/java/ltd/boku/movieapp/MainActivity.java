@@ -13,6 +13,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
     public static final String ONFAVORITE="favorite";
 
     //define working parameters
-    public static String title = null;
+    public static String title = "Popular movies";
     public String movieJSON = null;
     public static List<Movie> movieList;
     private  Movie movie = new Movie();
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
     //Recycler view definitions
     static MovieRecyclerViewAdapter movieRecyclerViewAdapter;
     private RecyclerView recyclerView;
+    private static  int currentRecyclerPosition=0;
 
 
     //Room database repository
@@ -65,13 +67,16 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
 
 
     //flags
-    boolean  onFavorite=false;
+    static boolean onFavorite=false;
 
     //View model
     MainViewModel mainViewModel;
 
+    private static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate: entering");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -84,29 +89,30 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
 
 
         URL url = AppUtility.composeURL(BASEURL, PATH);
-        title="Popular movies";    //default view
+        Log.d(TAG, "onCreate: "+ url);
 
         if (savedInstanceState != null) {
             title=savedInstanceState.getString(TITLE);
             onFavorite=savedInstanceState.getBoolean(ONFAVORITE,false);
+            movieList=(List<Movie>)savedInstanceState.getSerializable(MOVIELIST_INSTANCE);
+            currentRecyclerPosition=savedInstanceState.getInt("position");
         }
 
-        if (checkConnection() && !onFavorite){
-            Log.d("Check", "onCreate: not on favorite" + onFavorite);
-            loadMovie(url);
-        }
-
-
+        Log.d(TAG, "onCreate: " + onFavorite);
         mainViewModel= ViewModelProviders.of(this).get(MainViewModel.class);
         mainViewModel.getMovies().observe(this, movies -> movieRecyclerViewAdapter.setMovieList(movies));
 
-
+        if (checkConnection() && !onFavorite){
+            favoriteMovieRepository=new FavoriteMovieRepository(this);
+            Log.d("Check", "onCreate: not on favorite" + onFavorite);
+            loadMovie(url);
+        } else if (onFavorite){
+            favoriteMovieRepository=new FavoriteMovieRepository(this);
+            favoriteMovieRepository.getFavoriteMovieList().observe(this, movies -> movieList=movies);
+            mainViewModel.setMovies(movieList);
+        }
         configureRecycler();
-
-
-
         setTitle(title);
-        favoriteMovieRepository=new FavoriteMovieRepository(this);
         progressBar.setVisibility(View.GONE);
     }
 
@@ -121,12 +127,14 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
 
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
+        recyclerView.getLayoutManager().scrollToPosition(currentRecyclerPosition);
 
 
         movieRecyclerViewAdapter = new MovieRecyclerViewAdapter(this);
 
         recyclerView.setAdapter(movieRecyclerViewAdapter);
         progressBar.setVisibility(View.GONE);
+        Log.d(TAG, "configureRecycler: "+ currentRecyclerPosition);
     }
 
     public boolean checkConnection(){
@@ -157,12 +165,17 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState: entering");
         if (title!=null) {
             outState.putString(TITLE, title);
             outState.putBoolean(ONFAVORITE,onFavorite);
+        } if (movieList != null){
+            outState.putSerializable(MOVIELIST_INSTANCE,(Serializable)movieList);
         }
+        outState.putInt("position",currentRecyclerPosition);
         super.onSaveInstanceState(outState);
     }
+
 
     private void loadMovie(URL composedURL) {
         getMovies movies = new getMovies();
@@ -219,12 +232,13 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
                         .observe(this, movies -> {
                             movieRecyclerViewAdapter.setMovieList(movies);
                             movieList=movies;
+                            mainViewModel.setMovies(movieList);
+                            mainViewModel.getMovies().observe(this, mainMovies -> movieRecyclerViewAdapter.setMovieList(mainMovies));
                         });
+                //Log.d(TAG, "onOptionsItemSelected: movies number" + movieList.size());
                 progressBar.setVisibility(View.GONE);
                 title="Favorites";
                 this.setTitle(title);
-                mainViewModel.setMovies(movieList);
-                mainViewModel.getMovies().observe(this, movies -> movieRecyclerViewAdapter.setMovieList(movies));
                 onFavorite=true;
                 return true;
         }
@@ -249,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
         @Override
         protected String doInBackground(URL... urls) {
             URL url = urls[0];
+            Log.d(TAG, "doInBackground: " + url);
             runOnUiThread(() -> progressBar.setVisibility(View.VISIBLE));
             try {
                 movieJSON = AppUtility.getResponseFromHttpUrl(url);
@@ -258,6 +273,27 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
             }
             return null;
         }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.d(TAG, "onRestoreInstanceState: entering");
+        if (savedInstanceState != null) {
+            title=savedInstanceState.getString(TITLE);
+            onFavorite=savedInstanceState.getBoolean(ONFAVORITE,false);
+            movieList=(List<Movie>)savedInstanceState.getSerializable(MOVIELIST_INSTANCE);
+            currentRecyclerPosition=savedInstanceState.getInt("position");
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: entering");
+
+        currentRecyclerPosition= ((GridLayoutManager)recyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+
+        Log.d(TAG, "onPause: " + currentRecyclerPosition);
     }
 }
 
