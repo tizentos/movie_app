@@ -8,6 +8,8 @@ import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -40,6 +42,7 @@ import static ltd.boku.movieapp.utilities.AppUtility.BASEURL;
 
 public class MainActivity extends AppCompatActivity implements  MovieRecyclerViewAdapter.OnMovieRecyclerViewClickListener {
 
+    public static final String RECYCLER_STATE = "recycler_state";
     //Progress bar
     ProgressBar progressBar;
 
@@ -53,13 +56,12 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
     //define working parameters
     public static String title = "Popular movies";
     public String movieJSON = null;
-    public static List<Movie> movieList;
+    public  List<Movie> movieList;
     private  Movie movie = new Movie();
 
     //Recycler view definitions
-    static MovieRecyclerViewAdapter movieRecyclerViewAdapter;
+    private MovieRecyclerViewAdapter movieRecyclerViewAdapter;
     private RecyclerView recyclerView;
-    private static  int currentRecyclerPosition=0;
 
 
     //Room database repository
@@ -72,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
     //View model
     MainViewModel mainViewModel;
 
+    //
+    private Parcelable recyclerViewState;
+
     private static final String TAG = "MainActivity";
 
     @Override
@@ -79,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
         Log.d(TAG, "onCreate: entering");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mainViewModel= ViewModelProviders.of(this).get(MainViewModel.class);
 
         progressBar=findViewById(R.id.main_screen_progressbar);
         progressBar.setVisibility(View.VISIBLE);
@@ -95,11 +101,11 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
             title=savedInstanceState.getString(TITLE);
             onFavorite=savedInstanceState.getBoolean(ONFAVORITE,false);
             movieList=(List<Movie>)savedInstanceState.getSerializable(MOVIELIST_INSTANCE);
-            currentRecyclerPosition=savedInstanceState.getInt("position");
+            recyclerViewState=savedInstanceState.getParcelable(RECYCLER_STATE);
+            mainViewModel.setMovies(movieList);
         }
 
         Log.d(TAG, "onCreate: " + onFavorite);
-        mainViewModel= ViewModelProviders.of(this).get(MainViewModel.class);
         mainViewModel.getMovies().observe(this, movies -> movieRecyclerViewAdapter.setMovieList(movies));
 
         if (checkConnection() && !onFavorite){
@@ -111,12 +117,14 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
             favoriteMovieRepository.getFavoriteMovieList().observe(this, movies -> movieList=movies);
             mainViewModel.setMovies(movieList);
         }
+
         configureRecycler();
         setTitle(title);
         progressBar.setVisibility(View.GONE);
     }
 
     private void configureRecycler() {
+        Log.d(TAG, "configureRecycler: on Configure");
         recyclerView = findViewById(R.id.rv_movies);
         GridLayoutManager gridLayoutManager;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -125,16 +133,22 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
             gridLayoutManager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         }
 
+
+
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
-        recyclerView.getLayoutManager().scrollToPosition(currentRecyclerPosition);
 
+        if (recyclerViewState != null){
+            Log.d(TAG, "configureRecycler: restoring recycler state");
+            recyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+        }
 
         movieRecyclerViewAdapter = new MovieRecyclerViewAdapter(this);
-
+        if (movieList!=null){
+            movieRecyclerViewAdapter.setMovieList(movieList);
+        }
         recyclerView.setAdapter(movieRecyclerViewAdapter);
         progressBar.setVisibility(View.GONE);
-        Log.d(TAG, "configureRecycler: "+ currentRecyclerPosition);
     }
 
     public boolean checkConnection(){
@@ -172,7 +186,8 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
         } if (movieList != null){
             outState.putSerializable(MOVIELIST_INSTANCE,(Serializable)movieList);
         }
-        outState.putInt("position",currentRecyclerPosition);
+        recyclerViewState=recyclerView.getLayoutManager().onSaveInstanceState();
+        outState.putParcelable(RECYCLER_STATE, recyclerViewState);
         super.onSaveInstanceState(outState);
     }
 
@@ -256,7 +271,8 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             //Parse JSON
-            AppUtility.movieJSONParser(s,MainActivity.movieList,MainActivity.movieRecyclerViewAdapter);
+            movieList=AppUtility.movieJSONParser(s);
+            movieRecyclerViewAdapter.setMovieList(movieList);
             progressBar.setVisibility(View.GONE);
         }
 
@@ -282,18 +298,15 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
             title=savedInstanceState.getString(TITLE);
             onFavorite=savedInstanceState.getBoolean(ONFAVORITE,false);
             movieList=(List<Movie>)savedInstanceState.getSerializable(MOVIELIST_INSTANCE);
-            currentRecyclerPosition=savedInstanceState.getInt("position");
+            recyclerViewState=savedInstanceState.getParcelable(RECYCLER_STATE);
         }
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause: entering");
-
-        currentRecyclerPosition= ((GridLayoutManager)recyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();
-
-        Log.d(TAG, "onPause: " + currentRecyclerPosition);
+    protected void onResume() {
+        Log.d(TAG, "onResume: entering");
+        recyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+        super.onResume();
     }
 }
 

@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import ltd.boku.movieapp.BuildConfig;
 import ltd.boku.movieapp.database.Movie;
 import ltd.boku.movieapp.adapters.MovieRecyclerViewAdapter;
 import ltd.boku.movieapp.database.Review;
@@ -24,8 +25,8 @@ import ltd.boku.movieapp.viewmodels.MainViewModel;
 
 
 public class AppUtility {
-    public static final String GOOGLEAPI="AIzaSyC_chnH8o_OIcuN3f_QGwRnjEhzCUcuc4s";
-    public static final String APIKEY = "API";  //TODO Add Movies API Key here
+    public static final String GOOGLEAPI= BuildConfig.GOOGLEAPI;
+    public static final String APIKEY = BuildConfig.APIKEY;  //TODO Add Movies API Key in the gradle.properties file
     public static final String BASEURL = "https://api.themoviedb.org/3/movie";
 
     //buid a URL with a specific path
@@ -85,7 +86,7 @@ public class AppUtility {
     }
 
     //parse received JSON data
-    public static void movieJSONParser(String rawJSON, List<Movie> movieList, MovieRecyclerViewAdapter movieRecyclerViewAdapter) {
+    public static List<Movie> movieJSONParser(String rawJSON) {
         long movieId=0;
         String original_title = null;
         String image_thumbnail_url = null;
@@ -93,6 +94,7 @@ public class AppUtility {
         float user_rating = 0f;
         String release_date = null;
         Movie movie = null;
+        List<Movie> movieList=new ArrayList<>();
         try {
             JSONObject jsonObject = new JSONObject(rawJSON);
             JSONArray jsonArray = jsonObject.getJSONArray("results");
@@ -112,10 +114,11 @@ public class AppUtility {
                 movie = new Movie(movieId,original_title, image_thumbnail_url, overview, user_rating, release_date);
                 movieList.add(movie);
             }
-            movieRecyclerViewAdapter.setMovieList(movieList);
+            return  movieList;
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return movieList;
     }
 
     public static  String reviewJSONToString(String rawJSON){
