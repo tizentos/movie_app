@@ -1,16 +1,24 @@
 package ltd.boku.movieapp;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.design.widget.TabLayout;
+import android.support.graphics.drawable.AnimationUtilsCompat;
+import android.support.transition.Slide;
 import android.support.v4.app.ShareCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Layout;
+import android.transition.AutoTransition;
+import android.transition.Transition;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -74,6 +82,7 @@ public class MovieDetailActivity extends AppCompatActivity{
         Intent intent=getIntent();
 
 
+
         if ((intent.hasExtra(MOVIE_EXTRA)) && (intent.hasExtra(ONFAVORITE))){
             movie=(Movie)intent.getSerializableExtra(MOVIE_EXTRA);
             onFavorite=intent.getBooleanExtra(ONFAVORITE,false);
@@ -86,6 +95,22 @@ public class MovieDetailActivity extends AppCompatActivity{
         txRelease=findViewById(R.id.tx_release_date);
         txOverview=findViewById(R.id.tx_overview);
         userRating=findViewById(R.id.ratingBar);
+
+
+        //TODO receiving activity
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            android.transition.Slide slide = new android.transition.Slide(Gravity.BOTTOM);
+            slide.addTarget(txTitle);
+            slide.addTarget(imageView);
+            slide.setInterpolator(AnimationUtils.loadInterpolator(this,android.R.interpolator.fast_out_slow_in));
+            slide.setDuration(300);
+//            getWindow().setEnterTransition(slide);
+
+            // check below for shared element transition
+             getWindow().setSharedElementEnterTransition(new AutoTransition());
+        }
+
+
 
         userRating.setMax(5);
         userRating.setNumStars(5);

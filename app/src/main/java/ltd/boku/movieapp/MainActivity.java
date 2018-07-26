@@ -1,5 +1,8 @@
 package ltd.boku.movieapp;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.app.ActivityOptions;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -12,6 +15,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -22,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 
 import com.facebook.stetho.Stetho;
 
@@ -163,7 +168,9 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
 
         Snackbar.make(findViewById(R.id.main_screen),
                 "Internet not connected",Snackbar.LENGTH_INDEFINITE)
-                .setAction("RECONNECT", v -> reconnect()).show();
+                .setAction("RECONNECT", (View v) -> {
+                    reconnect();
+                }).show();
         progressBar.setVisibility(View.GONE);
 
         return false;
@@ -175,6 +182,24 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
            loadMovie(url);
            return;
        }
+    }
+
+    //TODO for animation on enter page
+    @Override
+    public void onEnterAnimationComplete() {
+        super.onEnterAnimationComplete();
+        ScrollView mScrollView=new ScrollView(this); //dummy scroll view, to be replaced with actual one
+
+        final int startScrollPos=getResources().getDimensionPixelSize(
+                R.dimen.cardview_compat_inset_shadow
+        );
+        Animator animator= ObjectAnimator.ofInt(
+                mScrollView, //reference to the scrollView
+                "scrollY",
+                startScrollPos
+        );
+        animator.setDuration(300);
+        animator.start();
     }
 
     @Override
@@ -204,7 +229,17 @@ public class MainActivity extends AppCompatActivity implements  MovieRecyclerVie
         Intent intent = new Intent(this, MovieDetailActivity.class);
         intent.putExtra(MOVIE_EXTRA, movie);
         intent.putExtra(ONFAVORITE,onFavorite);
-        startActivity(intent);
+
+        //Transition code
+//        TODO Bundle bundle= ActivityOptionsCompat.makeSceneTransitionAnimation(this).toBundle();
+        //another style for shared view transition
+        Bundle bundle= ActivityOptions.makeSceneTransitionAnimation(
+                this,
+                findViewById(R.id.img_movie),
+                findViewById(R.id.img_movie).getTransitionName()
+        ).toBundle();
+        startActivity(intent,bundle);
+
     }
 
     @Override

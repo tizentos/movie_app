@@ -14,4 +14,5 @@
     <string name="menu_share_text">Share with friends</string>
     <string name="share_message">Hey Friend! Check this movie out; %1$s</string>
     <string name="share_title">Inform your friends about the movie</string>
+    <string name="movie_photo">Movie picture</string>
 </resources>

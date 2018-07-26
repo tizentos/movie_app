@@ -6,6 +6,18 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <!--set content transition also here-->
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+
+    <!--TODO important parameter to set for animation-->
+    <style name="AppTheme.Home">
+        <!--for single element transition
+            implement the theme to the parent activity
+        <item name="android:windowEnterTransition">@transition/grid_exit</item>-->
+        <item name="android:windowSharedElementEnterTransition">@android:transition/fade</item>
+        <item name="android:windowReenterTransition">@android:transition/slide_top</item>
     </style>
 
     <style name="TextStyle">
